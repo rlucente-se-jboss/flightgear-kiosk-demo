@@ -5,7 +5,7 @@
 [[ $EUID -ne 0 ]] && exit_on_error "Must run as root"
 
 # enable the CodeReady Builder repo for EPEL
-subscription-manager repos --enable codeready-builder-for-rhel-9-aarch64-rpms
+subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
 
 # enable EPEL repo
 dnf install $EPEL_URL
