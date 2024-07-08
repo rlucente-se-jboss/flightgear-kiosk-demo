@@ -8,8 +8,9 @@
 subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
 
 # enable EPEL repo
-dnf install $EPEL_URL
-sudo dnf -y upgrade
+dnf -y install $EPEL_URL
+dnf -y upgrade
+dnf -y clean all
 
 # install required packages
 dnf -y install gnome-session gnome-kiosk gnome-kiosk-script-session snapd
@@ -23,6 +24,14 @@ systemctl set-default graphical.target
 
 # check the snap version
 snap --version
+
+# wait for snapd start to settle down
+for i in {1..10}
+do
+    echo -n '.'
+    sleep 1
+done
+echo
 
 # install flightgear
 snap install flightgear
