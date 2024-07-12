@@ -5,7 +5,9 @@ and copy the `flightgear-rpms.zip` file to the `flightgear-kiosk-demo`
 folder.
 
 Install RHEL 9.4 minimal
+
 Copy this repo to RHEL 9.4 instance
+
 Edit demo.conf to make sure parameters are correct
 
     cd ~/flightgear-kiosk-demo
