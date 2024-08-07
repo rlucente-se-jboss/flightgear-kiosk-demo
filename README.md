@@ -25,3 +25,19 @@ Switch to the graphical target
 
     sudo systemctl set-default graphical.target
     sudo reboot
+
+### Launch a F35B Lightning from the command line 
+- Launch Flightgear into the launcher
+- Click "Aircraft" on the left hand menu
+- Click "Browse" at the top of the page
+- Search Lockheed
+- Install the model named "Lockheed Martin F35B Lightning II (YASim)
+
+Now you can run the following command from the terminal and launch into a fullscreen session of the F35B on an airstrip in the Grand Canyon
+```
+fgfs --prop:/nasal/local_weather/enabled=false --metar=XXXX 012345Z 15003KT 19SM FEW072 FEW350 25/07 Q1028 NOSIG --prop:/environment/weather-     
+scenario=Core high pressure region --disable-rembrandt --prop:/sim/rendering/shaders/skydome=true --prop:/sim/rendering/texture-cache/cache- 
+enabled=false --enable-fullscreen --enable-terrasync --enable-sentry --aircraft=org.flightgear.fgaddon.stable_2020.F-35B-yasim --airport=KGCN -- 
+runway=21 --fg-aircraft=/home/redhat/.fgfs/Aircraft/org.flightgear.fgaddon.stable_2020/Aircraft
+```
+  
