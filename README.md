@@ -1,8 +1,7 @@
 ## WIP Nothing to see here ##
 
-After cloning this repo, download the custom built [FlightGear RPMs](https://drive.google.com/file/d/1_ySCwcSw4gtu8k8FoCAbMcBheAKRoV8G/view?usp=drive_link)
-and copy the `flightgear-rpms.tgz` file to the `flightgear-kiosk-demo`
-folder.
+After cloning this repo, download the custom built [FlightGear RPMs](https://drive.google.com/file/d/1rwDJ9LB29kvqw0GXTTOUe0mK9mCzbFn3/view?usp=drive_link)
+and copy the `fg-rpms.tgz` file to the `flightgear-kiosk-demo` folder.
 
 Install RHEL 9.4 minimal
 
@@ -18,7 +17,7 @@ Edit demo.conf to make sure parameters are correct
 Install the FlightGear RPMs and the minimal graphical environment
 
     cd ~/flightgear-kiosk-demo
-    tar zxf flightgear-rpms.tgz
+    tar zxf fg-rpms.tgz
     sudo dnf -y install flightgear-rpms/* gnome-shell
 
 Switch to the graphical target
