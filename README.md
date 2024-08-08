@@ -1,4 +1,4 @@
-## WIP Nothing to see here ##
+# WIP Nothing to see here #
 
 After cloning this repo, download the custom built [FlightGear RPMs](https://drive.google.com/file/d/1rwDJ9LB29kvqw0GXTTOUe0mK9mCzbFn3/view?usp=drive_link)
 and copy the `fg-rpms.tgz` file to the `flightgear-kiosk-demo` folder.
@@ -25,7 +25,7 @@ Switch to the graphical target
     sudo systemctl set-default graphical.target
     sudo reboot
 
-### Launch a F35B Lightning from the command line 
+## Launch a F35B Lightning from the command line 
 - Launch Flightgear into the launcher
 - Click "Aircraft" on the left hand menu
 - Click "Browse" at the top of the page
@@ -39,3 +39,8 @@ scenario=Core high pressure region --disable-rembrandt --prop:/sim/rendering/sha
 enabled=false --enable-fullscreen --enable-terrasync --enable-sentry --aircraft=org.flightgear.fgaddon.stable_2020.F-35B-yasim --airport=KGCN -- 
 runway=21 --fg-aircraft=/home/redhat/.fgfs/Aircraft/org.flightgear.fgaddon.stable_2020/Aircraft
 ```
+
+## Build as a bootable container
+
+    cd ~/flightgear-kiosk-demo
+    podman build -f Containerfile -t bootc-fg
