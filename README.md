@@ -1,7 +1,7 @@
 ## WIP Nothing to see here ##
 
-After cloning this repo, download the custom built [FlightGear RPMs](https://drive.google.com/file/d/1Ud-s--0o4A95WMxjAdRR8Ix0T_K4G5Dm/view?usp=drive_link)
-and copy the `flightgear-rpms.zip` file to the `flightgear-kiosk-demo`
+After cloning this repo, download the custom built [FlightGear RPMs](https://drive.google.com/file/d/1_ySCwcSw4gtu8k8FoCAbMcBheAKRoV8G/view?usp=drive_link)
+and copy the `flightgear-rpms.tgz` file to the `flightgear-kiosk-demo`
 folder.
 
 Install RHEL 9.4 minimal
@@ -18,7 +18,7 @@ Edit demo.conf to make sure parameters are correct
 Install the FlightGear RPMs and the minimal graphical environment
 
     cd ~/flightgear-kiosk-demo
-    unzip flightgear-rpms.zip
+    tar zxf flightgear-rpms.tgz
     sudo dnf -y install flightgear-rpms/* gnome-shell
 
 Switch to the graphical target
@@ -40,4 +40,3 @@ scenario=Core high pressure region --disable-rembrandt --prop:/sim/rendering/sha
 enabled=false --enable-fullscreen --enable-terrasync --enable-sentry --aircraft=org.flightgear.fgaddon.stable_2020.F-35B-yasim --airport=KGCN -- 
 runway=21 --fg-aircraft=/home/redhat/.fgfs/Aircraft/org.flightgear.fgaddon.stable_2020/Aircraft
 ```
-  
