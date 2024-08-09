@@ -8,7 +8,7 @@
 subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
 
 # enable the EPEL repo
-dnf -y install $EPEL_URL
+dnf -y install $EPEL_URL container-tools
 dnf -y upgrade
 dnf -y clean all
 
