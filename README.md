@@ -89,6 +89,10 @@ Use the following command to build the `base` bootable container image.
     . demo.conf
     podman build -f Containerfile -t $CONTAINER_REPO:base
 
+Push the image to the registry.
+
+    podman push $CONTAINER_REPO:base
+
 ## Deploy the image using an ISO file
 Run the following command to generate an installable ISO file for your
 bootable container. This command prepares a kickstart file to pull
