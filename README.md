@@ -42,6 +42,12 @@ runway=21 --fg-aircraft=/home/redhat/.fgfs/Aircraft/org.flightgear.fgaddon.stabl
 ```
 
 ## Build as a bootable container
+Make sure to login to the registry to pull the bootable container image.
 
     cd ~/flightgear-kiosk-demo
+    podman login registry.redhat.io
+
+Enter your credentials when prompted. Then use the following command to
+build the bootable container.
+
     podman build -f Containerfile -t bootc-fg
