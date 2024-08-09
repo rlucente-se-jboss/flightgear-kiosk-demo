@@ -3,7 +3,7 @@
 This demo is intended to run the open source FlightGear flight simulator
 on a RHEL instance using Image Mode.
 
-# Demo Setup
+## Demo Setup
 Start with a minimal install of RHEL 9.4 either on baremetal or on a guest
 VM. Use UEFI firmware, if able to, when installing your system. Also make
 sure there's sufficient disk space on the RHEL 9.4 instance to support the
@@ -88,6 +88,26 @@ Use the following command to build the `base` bootable container image.
     cd ~/flightgear-kiosk-demo
     . demo.conf
     podman build -f Containerfile -t $CONTAINER_REPO:base
+
+## Deploy the image using an ISO file
+Run the following command to generate an installable ISO file for your
+bootable container. This command prepares a kickstart file to pull
+the bootable container image from the registry and install that to the
+filesystem on the target system. This kickstart file is then injected
+into the standard RHEL boot ISO you downloaded earlier. It's important to
+note that the content for the target system is actually in the bootable
+container image in the registry.
+
+    sudo ./gen-iso.sh
+
+The generated file is named `bootc-flightgear.iso`. Use that file to boot
+a physical edge device or virtual guest. Ensure that you use the UEFI
+firmware option for a virtual guest or install to a physical edge device
+that supports UEFI. Make sure this system is able to access your public
+registry to pull down the bootable container image.
+
+Test the deployment by logging into the graphical user interface and
+launching the FlightGear flight simulator.
 
 ## Launch a F35B Lightning from the command line 
 - Launch Flightgear into the launcher
