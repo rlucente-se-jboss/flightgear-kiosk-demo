@@ -1,7 +1,8 @@
 # WIP Nothing to see here #
 
 After cloning this repo, download the custom built [FlightGear RPMs](https://drive.google.com/drive/folders/112i4mOfHXXEoZNdSln_xWgMdx3ssWHtz?usp=drive_link)
-and copy the `fg-rpms.tgz` file to the `flightgear-kiosk-demo` folder.
+and copy the `fg-rpms.tgz` file to the local copy of this repository
+(e.g. `~/flightgear-kiosk-demo`).
 
 Install RHEL 9.4 minimal
 
