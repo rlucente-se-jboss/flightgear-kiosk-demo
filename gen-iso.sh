@@ -9,6 +9,12 @@ cat > bootc-flightgear.ks <<EOF
 # kickstart to pull down and install OCI container as the operating system
 #
 
+# This will be a graphical environment
+graphical
+lang en_US.UTF-8
+keyboard us
+timezone --utc America/New_York
+
 network --bootproto=dhcp --device=link --activate
 
 # Basic partitioning
