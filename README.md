@@ -113,6 +113,16 @@ registry to pull down the bootable container image.
 Test the deployment by logging into the graphical user interface and
 launching the FlightGear flight simulator.
 
+## Download the aircraft models
+For running FlightGear locally and experimenting with command line
+options with FlightGear, please do the following:
+
+    cd ~/flightgear-kiosk-demo
+    curl -O https://mirrors.ibiblio.org/flightgear/ftp/Aircraft/F-35B.zip
+    curl -O https://mirrors.ibiblio.org/flightgear/ftp/Aircraft/Lockheed-Martin-FA-22A-Raptor.zip
+
+    ./launch-fgfs.sh
+
 ## Launch a F35B Lightning from the command line 
 - Launch Flightgear into the launcher
 - Click "Aircraft" on the left hand menu
