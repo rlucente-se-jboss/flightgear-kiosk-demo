@@ -11,9 +11,9 @@ AIRCRAFT_MODEL=F-35B
 # Scenery around Langley AFB
 SCENERY=( \
     Airports \
-            w060n30 w060n40 \
-    w070n20 w070n30 w070n40 \
-    w080n20 w080n30 w080n40 \
+    w080n40 w070n40 w060n40 \
+    w080n30 w070n30 w060n30 \
+    w080n20 w070n20 \
 )
 
 # setup environment variables for FlightGear
@@ -84,4 +84,5 @@ fgfs \
     --disable-real-weather-fetch \
     --enable-clouds3d \
     --disable-terrasync \
-    --fg-scenery=$FG_HOME/Scenery
+    --fg-scenery=$FG_HOME/Scenery \
+    --prop:/engines/engine[0]/running=true
