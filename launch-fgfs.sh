@@ -8,12 +8,17 @@ WORKDIR=$(pushd $(dirname $0) > /dev/null && pwd && popd > /dev/null)
 # define aircraft model and scenery tiles
 AIRCRAFT_MODEL=F-35B
 
-# Scenery around Langley AFB
+# Langley AFB lat/lon
+LAT_DEGREES=37.0835
+LON_DEGREES=-76.3592
+
+# Scenery around Langley AFB where coordinates refer to the lower
+# left-hand corner of the tile
 SCENERY=( \
     Airports \
-    w080n40 w070n40 w060n40 \
-    w080n30 w070n30 w060n30 \
-    w080n20 w070n20 \
+    w090n40 w080n40 w070n40 \
+    w090n30 w080n30 w070n30 \
+    w090n20 w080n20 w070n20 \
 )
 
 # setup environment variables for FlightGear
@@ -73,8 +78,8 @@ fgfs \
     --enable-auto-coordination \
     --timeofday=afternoon \
     --season=summer \
-    --lon=-76.3592 \
-    --lat=37.0835 \
+    --lat=$LAT_DEGREES \
+    --lon=$LON_DEGREES \
     --altitude=20000 \
     --heading=0 \
     --roll=0 \
