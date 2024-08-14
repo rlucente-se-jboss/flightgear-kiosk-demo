@@ -1,25 +1,7 @@
 #!/usr/bin/env bash
 
-WORKDIR=$(pushd $(dirname $0) > /dev/null && pwd && popd > /dev/null)
-. $WORKDIR/demo.conf
-
-[[ $EUID -eq 0 ]] && exit_on_error "Must NOT run as root"
-
-# define aircraft model and scenery tiles
-AIRCRAFT_MODEL=F-35B
-
-# Langley AFB lat/lon
-LAT_DEGREES=37.0835
-LON_DEGREES=-76.3592
-
-# Scenery around Langley AFB where coordinates refer to the lower
-# left-hand corner of the tile
-SCENERY=( \
-    Airports \
-    w090n40 w080n40 w070n40 \
-    w090n30 w080n30 w070n30 \
-    w090n20 w080n20 w070n20 \
-)
+# source aircraft model, scenery, and location parameters
+. $HOME/fgdemo.conf
 
 # setup environment variables for FlightGear
 export FG_HOME=~/.fgfs
@@ -29,36 +11,24 @@ export FG_AIRCRAFT=$FG_HOME/Aircraft/org.flightgear.fgaddon.stable_2020/Aircraft
 rm -fr $FG_HOME
 mkdir -p $FG_AIRCRAFT $FG_HOME/Scenery
 
-# setup downloaded aircraft and scenery cache
-CACHEDIR=$WORKDIR/cache
+# setup aircraft and scenery cache
+CACHEDIR=$HOME/Downloads
 mkdir -p $CACHEDIR
 
-# download and cache aircraft model
-BASE_AIRCRAFT_URL=https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020
-
-if [ ! -f $CACHEDIR/$AIRCRAFT_MODEL.zip ]; then
-    echo "Downloading $AIRCRAFT_MODEL"
-    curl -so $CACHEDIR/$AIRCRAFT_MODEL.zip $BASE_AIRCRAFT_URL/$AIRCRAFT_MODEL.zip
-fi
-
+# add aircraft model to FlightGear
 echo "Add aircraft $AIRCRAFT_MODEL to FlightGear"
 unzip -q $CACHEDIR/$AIRCRAFT_MODEL.zip -d $FG_AIRCRAFT
 
-# download and cache scenery tiles
-BASE_SCENERY_URL=https://mirrors.ibiblio.org/flightgear/ftp/Scenery-v2.12
-
+# add scenery files to FlightGear
 for i in ${SCENERY[@]}
 do
     TARFILE=$i.tgz
-    if [ ! -f $CACHEDIR/$TARFILE ]; then
-        echo "Downloading $i scenery"
-        curl -so $CACHEDIR/$TARFILE $BASE_SCENERY_URL/$TARFILE
-    fi
 
     echo "Add scenery $i to FlightGear"
     tar zxf $CACHEDIR/$TARFILE -C $FG_HOME/Scenery
 done
 
+# run FlightGear
 fgfs \
     --enable-hud-3d \
     --enable-random-objects \
@@ -91,3 +61,6 @@ fgfs \
     --disable-terrasync \
     --fg-scenery=$FG_HOME/Scenery \
     --prop:/engines/engine[0]/running=true
+
+sleep 1.0
+exec "$0" "$@"
