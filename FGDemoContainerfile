@@ -1,0 +1,15 @@
+ARG CONTAINER_REPO
+FROM $CONTAINER_REPO:base 
+
+# copy scenario content to the kiosk-mode downloads directory
+ARG DL_SCENARIO
+COPY $DL_SCENARIO /usr/share/kiosk-mode/downloads
+
+# copy scenario parameters file to the kiosk user's home directory
+ARG FGDEMO_CONF
+COPY $FGDEMO_CONF /usr/share/kiosk-mode/fgdemo.conf
+
+# overwrite kiosk script with FlightGear startup script 
+COPY gnome-kiosk-script /usr/share/kiosk-mode/bin
+
+RUN  chown -R kiosk: /usr/share/kiosk-mode
