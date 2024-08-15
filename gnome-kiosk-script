@@ -43,6 +43,7 @@ fgfs \
     --enable-horizon-effect \
     --enable-specular-highlight \
     --enable-fullscreen \
+    --enable-sound \
     --shading-smooth \
     --aircraft=$FLIGHT_MODEL \
     --in-air \
