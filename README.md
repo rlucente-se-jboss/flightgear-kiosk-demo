@@ -1,7 +1,9 @@
 # WIP Nothing to see here
 # FlightGear Demo with RHEL Image Mode
 This demo is intended to run the open source FlightGear flight simulator
-on a RHEL instance using Image Mode.
+on a edge device using RHEL Image Mode. The simulator will run in kiosk
+mode with a session for an unprivileged user. A privileged user will
+also be configured on the edge device.
 
 ## Demo Setup
 Start with a minimal install of RHEL 9.4 either on baremetal or on a guest
@@ -38,12 +40,13 @@ The full list of options in the `demo.conf` file are shown here.
 | EPEL_URL         | The Extra Packages for Enterprise Linux URL |
 | EDGE_USER        | The name of a user on the target edge device |
 | EDGE_PASS        | The plaintext password for the user on the target edge device |
+| DEMO_USER        | Unprivileged user on the edge device in kiosk mode |
+| BOOT_ISO         | Minimal boot ISO used to create a custom ISO with a custom kickstart file |
 | EDGE_HASH        | A SHA-512 hash of the EDGE_PASS parameter |
 | SSH_PUB_KEY      | The SSH public key of a user on the target edge device |
-| BOOT_ISO         | Minimal boot ISO used to create a custom ISO with a custom kickstart file |
-| CONTAINER_REPO   | The fully qualified name for your bootable container repository |
 | HOSTIP           | The routable IP address to the host |
 | REGISTRYPORT     | The port for the local container registry |
+| CONTAINER_REPO   | The fully qualified name for your bootable container repository |
 | REGISTRYINSECURE | Boolean for whether the registry requires TLS |
 
 Make sure to download the `BOOT_ISO` file, e.g. [rhel-9.4-x86_64-boot.iso](https://access.redhat.com/downloads/content/rhel)
@@ -82,16 +85,65 @@ credentials to pull the tools to transform into other image types.
 
 At this point, setup is complete.
 
-## Build as a bootable container
+## Build the base container image
 Use the following command to build the `base` bootable container image.
 
     cd ~/flightgear-kiosk-demo
     . demo.conf
-    podman build -f Containerfile -t $CONTAINER_REPO:base
+    podman build -f BaseContainerfile -t $CONTAINER_REPO:base
 
-Push the image to the registry.
+Tag the base image as `prod` for production and then push both image
+tags to the registry.
 
+    podman tag $CONTAINER_REPO:base $CONTAINER_REPO:prod
     podman push $CONTAINER_REPO:base
+    podman push $CONTAINER_REPO:prod
+
+# Review the FlightGear scenario files
+Each FlightGear scenario is defined in a parameter file following the
+naming convention `fgdemo<n>.conf` files, where n is simply an integer
+(e.g. `fgdemo1.conf`, `fgdemo2.conf`, etc). These files define the scenery
+tiles to download, starting location for the aircraft, and various other
+parameters such as altitude, speed, flight dynamics model, etc.
+
+Two example scenarios are included in this repo but it's easy to add
+more. The included scenarios are:
+
+* F-35B at cruise above Langley AFB in Virginia (`fgdemo1.conf`)
+* F-22A at cruise above Edwards AFB in California (`fgdemo2.conf`)
+
+There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020)
+as well as downloadable [scenery files](https://mirrors.ibiblio.org/flightgear/ftp/Scenery-v2.12).
+
+# Download scenario content for FlightGear
+Use the scenario configuration files to download the aircraft model and
+scenery files for each FlightGear scenario. The below command uses the
+parameters found in the scenario configuration files to download the
+needed data.
+
+    ./download-content.sh
+
+# Build the FlightGear scenario container images
+Once the content is downloaded, you can build a bootable container image
+for each scenario. Use the following commands:
+
+    cd ~/flightgear-kiosk-demo
+    . demo.conf
+    
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35 \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg FGDEMO_CONF=fgdemo1.conf \
+        --build-arg DL_SCENARIO=F-35B/
+
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22 \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg FGDEMO_CONF=fgdemo2.conf \
+        --build-arg DL_SCENARIO=Lockheed-Martin-FA-22A-Raptor/
+
+Push the FlightGear bootable containers to the registry.
+
+    podman push $CONTAINER_REPO:f35
+    podman push $CONTAINER_REPO:f22
 
 ## Deploy the image using an ISO file
 Run the following command to generate an installable ISO file for your
@@ -110,8 +162,11 @@ firmware option for a virtual guest or install to a physical edge device
 that supports UEFI. Make sure this system is able to access your public
 registry to pull down the bootable container image.
 
-Test the deployment by logging into the graphical user interface and
-launching the FlightGear flight simulator.
+Test the deployment by logging into the graphical user interface. The
+kiosk user should automatically log into a desktop where only the web
+browser is available with no other desktop controls.
+
+** LEFT OFF HERE **
 
 ## Download the aircraft models
 For running FlightGear locally and experimenting with command line
