@@ -109,7 +109,7 @@ Push the image to the registry.
 
     podman push $CONTAINER_REPO:base
 
-# Review the FlightGear scenario files
+## Review the FlightGear scenario files
 Each FlightGear scenario is defined in a parameter file following the
 naming convention `fgdemo<n>.conf` files, where n is simply an integer
 (e.g. `fgdemo1.conf`, `fgdemo2.conf`, etc). These files define the scenery
@@ -125,7 +125,7 @@ more. The included scenarios are:
 There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020)
 as well as downloadable [scenery files](https://mirrors.ibiblio.org/flightgear/ftp/Scenery-v2.12).
 
-# Download scenario content for FlightGear
+## Download scenario content for FlightGear
 Use the scenario configuration files to download the aircraft model and
 scenery files for each FlightGear scenario. The below command uses the
 parameters found in the scenario configuration files to download the
@@ -133,7 +133,7 @@ needed data.
 
     ./download-content.sh
 
-# Build the FlightGear scenario container images
+## Build the FlightGear scenario container images
 Once the content is downloaded, you can build a bootable container image
 for each scenario. Use the following commands:
 
