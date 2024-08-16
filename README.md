@@ -1,9 +1,13 @@
-# WIP Nothing to see here
 # FlightGear Demo with RHEL Image Mode
-This demo is intended to run the open source FlightGear flight simulator
-on a edge device using RHEL Image Mode. The simulator will run in kiosk
-mode with a session for an unprivileged user. A privileged user will
-also be configured on the edge device.
+RHEL Image Mode enables an edge device to completely change it's operating
+system image by switching to a different bootable container image from
+the one that's currently running. This demo illustrates that in a very
+visual way where three bootable container images are built and then easily
+swapped out on an edge device. To make this interesting, this demo runs
+the open source FlightGear flight simulator on a edge device using RHEL
+Image Mode. The simulator will run in kiosk mode with a session for an
+unprivileged user. A privileged user will also be configured on the edge
+device to enable switching the bootable container image.
 
 ## Demo Setup
 Start with a minimal install of RHEL 9.4 either on baremetal or on a guest
@@ -16,7 +20,11 @@ These instructions assume that this repository is cloned or copied to your
 user's home directory on the host (e.g. `~/flightgear-kiosk-demo`). The
 below instructions follow that assumption.
 
-After cloning this repo, download the custom built [FlightGear RPMs](https://drive.google.com/drive/folders/112i4mOfHXXEoZNdSln_xWgMdx3ssWHtz?usp=drive_link)
+The open source FlightGear flight simulator is not normally available
+for RHEL 9 so I had to custom build eight RPMs in addition to using EPEL
+for other dependencies. How those RPMs were built is beyond the scope of
+this repo. After cloning this repo, download the custom built [FlightGear
+RPMs](https://drive.google.com/drive/folders/112i4mOfHXXEoZNdSln_xWgMdx3ssWHtz?usp=drive_link)
 and copy the `fg-rpms.tgz` file to the local copy of this repository
 (e.g. `~/flightgear-kiosk-demo`).
 
@@ -44,7 +52,7 @@ The full list of options in the `demo.conf` file are shown here.
 | BOOT_ISO         | Minimal boot ISO used to create a custom ISO with a custom kickstart file |
 | EDGE_HASH        | A SHA-512 hash of the EDGE_PASS parameter |
 | SSH_PUB_KEY      | The SSH public key of a user on the target edge device |
-| HOSTIP           | The routable IP address to the host |
+| HOSTIP           | The IP address of the local container registry |
 | REGISTRYPORT     | The port for the local container registry |
 | CONTAINER_REPO   | The fully qualified name for your bootable container repository |
 | REGISTRYINSECURE | Boolean for whether the registry requires TLS |
@@ -63,11 +71,23 @@ and ISO image tools.
     cd ~/flightgear-kiosk-demo
     sudo ./config-bootc.sh
 
-To ensure you can run this demo disconnected, set up a local container
-registry.
+Run the following command to create a placeholder registry configuration
+file to support the later bootable container build.
+
+    cd ~/flightgear-kiosk-demo
+    touch 999-local-registry.conf
+
+You can use a publicly accessible registry like [Quay](https://quay.io)
+but if you want to run this demo disconnected, you can also optionally
+set up a local container registry using the following script.
 
     cd ~/flightgear-kiosk-demo
     sudo ./config-registry.sh
+
+If you set up an insecure registry on another RHEL instance,
+please make sure to copy the `999-local-registry.conf` file to the
+`~/flightgear-kiosk-demo` and `/etc/containers/registries.conf.d`
+directories on the RHEL instance building the bootable container images.
 
 Login to Red Hat's container registry using your Red Hat customer portal
 credentials and then pull the container image for the base bootable
@@ -75,13 +95,6 @@ container.
 
     podman login registry.redhat.io
     podman pull registry.redhat.io/rhel9/rhel-bootc:latest
-
-The conversion container runs as root, so you'll need to login
-as root to `registry.redhat.io` using your [Red Hat customer portal](https://access.redhat.com)
-credentials to pull the tools to transform into other image types.
-
-    sudo podman login registry.redhat.io
-    sudo podman pull registry.redhat.io/rhel9/bootc-image-builder
 
 At this point, setup is complete.
 
@@ -92,12 +105,9 @@ Use the following command to build the `base` bootable container image.
     . demo.conf
     podman build -f BaseContainerfile -t $CONTAINER_REPO:base
 
-Tag the base image as `prod` for production and then push both image
-tags to the registry.
+Push the image to the registry.
 
-    podman tag $CONTAINER_REPO:base $CONTAINER_REPO:prod
     podman push $CONTAINER_REPO:base
-    podman push $CONTAINER_REPO:prod
 
 # Review the FlightGear scenario files
 Each FlightGear scenario is defined in a parameter file following the
@@ -162,33 +172,42 @@ firmware option for a virtual guest or install to a physical edge device
 that supports UEFI. Make sure this system is able to access your public
 registry to pull down the bootable container image.
 
+FlightGear requires extensive resources so you may see a core dump in
+a guest VM if memory is low. I've only tested running the bootable
+containers on a laptop with 64GB of memory and a 512GB SDD.
+
 Test the deployment by logging into the graphical user interface. The
 kiosk user should automatically log into a desktop where only the web
 browser is available with no other desktop controls.
 
-** LEFT OFF HERE **
+## Switching between operating system images
+Three bootable container images have been built where all of them will
+run in kiosk mode once installed.
 
-## Download the aircraft models
-For running FlightGear locally and experimenting with command line
-options with FlightGear, please do the following:
+* Firefox browsing to the RHEL Image Mode landing page.
+* FlightGear with an F-35B flying over Langley AFB in VA.
+* FlightGear with an F-22A flying over Edwards AFB in CA.
 
-    cd ~/flightgear-kiosk-demo
-    curl -O https://mirrors.ibiblio.org/flightgear/ftp/Aircraft/F-35B.zip
-    curl -O https://mirrors.ibiblio.org/flightgear/ftp/Aircraft/Lockheed-Martin-FA-22A-Raptor.zip
+Once the `base` image is installed, it's very simple to switch between
+them. The target device will auto-login to the unprivileged user `kiosk`
+at startup and render the browser in full screen and kiosk mode. No
+other desktop controls are available to the `kiosk` user.
 
-    ./launch-fgfs.sh
+To switch the bootable container operating system, login as the
+`EDGE_USER` defined in the `demo.conf` file earlier using ssh and the
+`id_core` private key created earlier.
 
-## Launch a F35B Lightning from the command line 
-- Launch Flightgear into the launcher
-- Click "Aircraft" on the left hand menu
-- Click "Browse" at the top of the page
-- Search Lockheed
-- Install the model named "Lockheed Martin F35B Lightning II (YASim)
+    ssh -i ~/.ssh/id_core core@IP_ADDRESS
 
-Now you can run the following command from the terminal and launch into a fullscreen session of the F35B on an airstrip in the Grand Canyon
-```
-fgfs --prop:/nasal/local_weather/enabled=false --metar=XXXX 012345Z 15003KT 19SM FEW072 FEW350 25/07 Q1028 NOSIG --prop:/environment/weather-     
-scenario=Core high pressure region --disable-rembrandt --prop:/sim/rendering/shaders/skydome=true --prop:/sim/rendering/texture-cache/cache- 
-enabled=false --enable-fullscreen --enable-terrasync --enable-sentry --aircraft=org.flightgear.fgaddon.stable_2020.F-35B-yasim --airport=KGCN -- 
-runway=21 --fg-aircraft=/home/redhat/.fgfs/Aircraft/org.flightgear.fgaddon.stable_2020/Aircraft
-```
+where `IP_ADDRESS` is the address of the edge device.
+
+Then type the following commands to switch to the F-22 flight simulation.
+
+    sudo bootc switch HOSTIP:REGISTRYPORT/bootc-flightgear:f22
+    sudo reboot
+
+where `HOSTIP` and `REGISTRYPORT` match the values in the `demo.conf`
+file. The other possibilities are:
+
+    HOSTIP:REGISTRYPORT/bootc-flightgear:base
+    HOSTIP:REGISTRYPORT/bootc-flightgear:f35
