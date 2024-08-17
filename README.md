@@ -111,7 +111,7 @@ Push the image to the registry.
 
 ## Review the FlightGear scenario files
 Each FlightGear scenario is defined in a parameter file following the
-naming convention `fgdemo<n>.conf` files, where n is simply an integer
+naming convention `fgdemo<n>.conf`, where n is simply an integer
 (e.g. `fgdemo1.conf`, `fgdemo2.conf`, etc). These files define the scenery
 tiles to download, starting location for the aircraft, and various other
 parameters such as altitude, speed, flight dynamics model, etc.
@@ -176,9 +176,9 @@ FlightGear requires extensive resources so you may see a core dump in
 a guest VM if memory is low. I've only tested running the bootable
 containers on a laptop with 64GB of memory and a 512GB SDD.
 
-Test the deployment by logging into the graphical user interface. The
-kiosk user should automatically log into a desktop where only the web
-browser is available with no other desktop controls.
+Test the deployment by verifying that the kiosk user automatically logs
+into a desktop where only the web browser is available with no other
+desktop controls.
 
 ## Switching between operating system images
 Three bootable container images have been built where all of them will
