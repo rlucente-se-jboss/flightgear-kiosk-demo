@@ -153,10 +153,17 @@ for each scenario. Use the following commands:
         --build-arg DEMO_USER=$DEMO_USER \
         --build-arg DL_SCENARIO=Lockheed-Martin-FA-22A-Raptor/
 
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52 \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg FGDEMO_CONF=fgdemo3.conf \
+        --build-arg DEMO_USER=$DEMO_USER \
+        --build-arg DL_SCENARIO=B-52F/
+
 Push the FlightGear bootable containers to the registry.
 
     podman push $CONTAINER_REPO:f35
     podman push $CONTAINER_REPO:f22
+    podman push $CONTAINER_REPO:b52
 
 ## Deploy the image using an ISO file
 Run the following command to generate an installable ISO file for your
