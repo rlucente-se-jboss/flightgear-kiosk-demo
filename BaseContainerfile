@@ -16,26 +16,29 @@ RUN --mount=type=bind,relabel=shared,source=fg-rpms.tgz,target=/tmp/fg-rpms.tgz 
 
 # add kiosk mode content under /usr/share/kiosk-mode since /var/home
 # cannot be updated after initial install
-RUN    useradd -m kiosk \
-    && passwd -d kiosk \
+ARG DEMO_USER
+RUN    useradd -m $DEMO_USER \
+    && passwd -d $DEMO_USER \
     && mkdir -p /usr/share/kiosk-mode/bin \
                 /usr/share/kiosk-mode/downloads \
     && touch /usr/share/kiosk-mode/fgdemo.conf \
     && printf '#!/bin/sh\nfirefox -kiosk https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux/image-mode\nsleep 1.0\nexec "$0" "$@"' \
            > /usr/share/kiosk-mode/bin/gnome-kiosk-script \
     && chmod +x /usr/share/kiosk-mode/bin/gnome-kiosk-script \
-    && chown -R kiosk: /usr/share/kiosk-mode
+    && chown -R $DEMO_USER: /usr/share/kiosk-mode
 
 # configure automatic logins and kiosk mode
+ARG DEMO_USER
 RUN    sed -i.bak "/^\[daemon\]/aAutomaticLoginEnable=True\nAutomaticLogin=kiosk" /etc/gdm/custom.conf \
     && printf '[User]\nSession=gnome-kiosk-script\nSystemAccount=false' \
-           > /var/lib/AccountsService/users/kiosk
+           > /var/lib/AccountsService/users/$DEMO_USER
 
 # soft-link kiosk user to kiosk-mode content
-RUN    rm -fr /home/kiosk/Downloads \
-    && ln -s /usr/share/kiosk-mode/downloads /home/kiosk/Downloads \
-    && ln -s /usr/share/kiosk-mode/fgdemo.conf /home/kiosk/ \
-    && mkdir -p /home/kiosk/.local/bin \
-    && ln -s /usr/share/kiosk-mode/bin/gnome-kiosk-script /home/kiosk/.local/bin/ \
-    && chown -R kiosk: /home/kiosk
+ARG DEMO_USER
+RUN    rm -fr /home/$DEMO_USER/Downloads \
+    && ln -s /usr/share/kiosk-mode/downloads /home/$DEMO_USER/Downloads \
+    && ln -s /usr/share/kiosk-mode/fgdemo.conf /home/$DEMO_USER/ \
+    && mkdir -p /home/$DEMO_USER/.local/bin \
+    && ln -s /usr/share/kiosk-mode/bin/gnome-kiosk-script /home/$DEMO_USER/.local/bin/ \
+    && chown -R $DEMO_USER: /home/$DEMO_USER
 
