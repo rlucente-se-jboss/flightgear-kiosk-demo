@@ -103,7 +103,8 @@ Use the following command to build the `base` bootable container image.
 
     cd ~/flightgear-kiosk-demo
     . demo.conf
-    podman build -f BaseContainerfile -t $CONTAINER_REPO:base
+    podman build -f BaseContainerfile -t $CONTAINER_REPO:base \
+        --build-arg DEMO_USER=$DEMO_USER
 
 Push the image to the registry.
 
@@ -143,11 +144,13 @@ for each scenario. Use the following commands:
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg FGDEMO_CONF=fgdemo1.conf \
+        --build-arg DEMO_USER=$DEMO_USER \
         --build-arg DL_SCENARIO=F-35B/
 
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg FGDEMO_CONF=fgdemo2.conf \
+        --build-arg DEMO_USER=$DEMO_USER \
         --build-arg DL_SCENARIO=Lockheed-Martin-FA-22A-Raptor/
 
 Push the FlightGear bootable containers to the registry.
