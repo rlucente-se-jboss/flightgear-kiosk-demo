@@ -62,9 +62,9 @@ fgfs \
     --enable-clouds3d \
     --disable-terrasync \
     --fg-scenery=$FG_HOME/Scenery \
-    --prop:/autopilot/settings/heading-bug-deg=180 \
-    --prop:/autopilot/settings/target-speed-kt=250 \
-    --prop:/autopilot/settings/target-altitude-ft=5000 \
+    --prop:/autopilot/settings/heading-bug-deg=$AP_HEADING \
+    --prop:/autopilot/settings/target-speed-kt=$AP_SPEED \
+    --prop:/autopilot/settings/target-altitude-ft=$AP_ALTITUDE \
     --prop:/autopilot/locks/altitude="altitude-hold" \
     --prop:/autopilot/locks/heading="dg-heading-hold" \
     --prop:/autopilot/locks/speed="speed-with-throttle" \
