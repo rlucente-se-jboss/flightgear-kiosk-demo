@@ -122,6 +122,7 @@ more. The included scenarios are:
 
 * F-35B at cruise above Langley AFB in Virginia (`fgdemo1.conf`)
 * F-22A at cruise above Edwards AFB in California (`fgdemo2.conf`)
+* B-52F at cruise above Barksdale AFB in Louisiana (`fgdemo3.conf`)
 
 There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020)
 as well as downloadable [scenery files](https://mirrors.ibiblio.org/flightgear/ftp/Scenery-v2.12).
