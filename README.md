@@ -222,3 +222,4 @@ file. The other possibilities are:
 
     HOSTIP:REGISTRYPORT/bootc-flightgear:base
     HOSTIP:REGISTRYPORT/bootc-flightgear:f35
+    HOSTIP:REGISTRYPORT/bootc-flightgear:b52
