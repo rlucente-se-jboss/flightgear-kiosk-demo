@@ -2,12 +2,12 @@
 RHEL Image Mode enables an edge device to completely change it's operating
 system image by switching to a different bootable container image from
 the one that's currently running. This demo illustrates that in a very
-visual way where three bootable container images are built and then easily
-swapped out on an edge device. To make this interesting, this demo runs
-the open source FlightGear flight simulator on a edge device using RHEL
-Image Mode. The simulator will run in kiosk mode with a session for an
-unprivileged user. A privileged user will also be configured on the edge
-device to enable switching the bootable container image.
+visual way where multiple bootable container images are built and then
+easily swapped out on an edge device. To make this interesting, this demo
+runs the open source FlightGear flight simulator on a edge device using
+RHEL Image Mode. The simulator will run in kiosk mode with a session
+for an unprivileged user. A privileged user will also be configured on
+the edge device to enable switching the bootable container image.
 
 ## Demo Setup
 Start with a minimal install of RHEL 9.4 either on baremetal or on a guest
@@ -26,6 +26,12 @@ for other dependencies. How those RPMs were built is beyond the scope of
 this repo. After cloning this repo, download the custom built [FlightGear
 RPMs](https://drive.google.com/drive/folders/112i4mOfHXXEoZNdSln_xWgMdx3ssWHtz?usp=drive_link)
 and copy the `fg-rpms.tgz` file to the local copy of this repository
+(e.g. `~/flightgear-kiosk-demo`).
+
+The Scenery data for FlightGear is quite extensive and downloads from the
+official site are throttled. To speed this up, please download the [scenery
+cache](https://drive.google.com/drive/folders/112i4mOfHXXEoZNdSln_xWgMdx3ssWHtz?usp=drive_link)
+and copy the `SceneryCache.tgz` file to the local copy of this repository
 (e.g. `~/flightgear-kiosk-demo`).
 
 Login to the host and then run the following commands to create an SSH
@@ -87,7 +93,8 @@ set up a local container registry using the following script.
 If you set up an insecure registry on another RHEL instance,
 please make sure to copy the `999-local-registry.conf` file to the
 `~/flightgear-kiosk-demo` and `/etc/containers/registries.conf.d`
-directories on the RHEL instance building the bootable container images.
+directories on this RHEL instance that will build the bootable container
+images.
 
 Login to Red Hat's container registry using your Red Hat customer portal
 credentials and then pull the container image for the base bootable
@@ -111,54 +118,81 @@ Push the image to the registry.
     podman push $CONTAINER_REPO:base
 
 ## Review the FlightGear scenario files
-Each FlightGear scenario is defined in a parameter file following the
-naming convention `fgdemo<n>.conf`, where n is simply an integer
-(e.g. `fgdemo1.conf`, `fgdemo2.conf`, etc). These files define the scenery
-tiles to download, starting location for the aircraft, and various other
-parameters such as altitude, speed, flight dynamics model, etc.
+Each FlightGear scenario is defined in a parameter file following
+the naming convention `fgdemo<n>.conf`, where n is simply an integer
+(e.g. `fgdemo1.conf`, `fgdemo2.conf`, etc). These files define the area
+of operation for scenery, starting location for the aircraft, and various
+other parameters such as altitude, speed, flight dynamics model, etc.
 
-Two example scenarios are included in this repo but it's easy to add
+Several example scenarios are included in this repo but it's easy to add
 more. The included scenarios are:
 
 * F-35B at cruise above Langley AFB in Virginia (`fgdemo1.conf`)
 * F-22A at cruise above Edwards AFB in California (`fgdemo2.conf`)
 * B-52F at cruise above Barksdale AFB in Louisiana (`fgdemo3.conf`)
 
-There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020)
-as well as downloadable [scenery files](https://mirrors.ibiblio.org/flightgear/ftp/Scenery-v2.12).
+There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020) that you can use.
 
-## Download scenario content for FlightGear
-Use the scenario configuration files to download the aircraft model and
-scenery files for each FlightGear scenario. The below command uses the
-parameters found in the scenario configuration files to download the
-needed data.
+## Refresh the scenario content for FlightGear
+The FlightGear scenery is quite detailed and bulk downloads are throttled
+to avoid overloading the servers. Normally, the simulator pulls scenery
+on-demand using a feature called `terrasync`, but for disconnected use
+cases, the scenery snapshot (`SceneryCache.tgz`) that you downloaded
+earlier seeds scenery for flight over defined geographic areas.
 
-    ./download-content.sh
+The following commands prepare the scenery cache and then refresh the
+data with any changes since the scenery data was last synced. How long
+this takes depends on the extent of changes that are necessary. The
+`update-data-cache.sh` script will also download the aircraft data
+defined in the scenario parameter files.
+
+    cd ~/flightgear-kiosk-demo
+    mkdir -p AircraftCache SceneryCache
+    tar zxf SceneryCache.tgz -C SceneryCache
+    ./update-data-cache.sh
+
+After this command runs, both the `AircraftCache` and the `SceneryCache`
+directories should be up to date.
+
+## Build the intermediate FlightGear container image
+Use the following command to build the `fgfs` container image that
+installs the FlightGear flight simulator and its extensive scenery
+files. This image will be quite large.
+
+    cd ~/flightgear-kiosk-demo
+    . demo.conf
+    podman build -f FGBaseContainerfile -t $CONTAINER_REPO:fgfs \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg DEMO_USER=$DEMO_USER
+
+Push the intermediate FlightGear container to the registry.
+
+    podman push $CONTAINER_REPO:fgfs
 
 ## Build the FlightGear scenario container images
-Once the content is downloaded, you can build a bootable container image
-for each scenario. Use the following commands:
+You are now ready to build a bootable container image for each
+scenario. Use the following commands:
 
     cd ~/flightgear-kiosk-demo
     . demo.conf
     
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg DL_SCENARIO=AircraftCache/F-35B/ \
         --build-arg FGDEMO_CONF=fgdemo1.conf \
-        --build-arg DEMO_USER=$DEMO_USER \
-        --build-arg DL_SCENARIO=F-35B/
+        --build-arg DEMO_USER=$DEMO_USER
 
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg DL_SCENARIO=AircraftCache/Lockheed-Martin-FA-22A-Raptor/ \
         --build-arg FGDEMO_CONF=fgdemo2.conf \
-        --build-arg DEMO_USER=$DEMO_USER \
-        --build-arg DL_SCENARIO=Lockheed-Martin-FA-22A-Raptor/
+        --build-arg DEMO_USER=$DEMO_USER
 
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg DL_SCENARIO=AircraftCache/B-52F/ \
         --build-arg FGDEMO_CONF=fgdemo3.conf \
-        --build-arg DEMO_USER=$DEMO_USER \
-        --build-arg DL_SCENARIO=B-52F/
+        --build-arg DEMO_USER=$DEMO_USER
 
 Push the FlightGear bootable containers to the registry.
 
