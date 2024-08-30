@@ -9,5 +9,5 @@ subscription-manager repos \
     --enable codeready-builder-for-rhel-9-x86_64-rpms
 
 # enable the EPEL repo and install needed tools
-dnf -y install $EPEL_URL container-tools lorax
+dnf -y install $EPEL_URL container-tools lorax git
 
