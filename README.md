@@ -162,8 +162,7 @@ files. This image will be quite large.
     cd ~/flightgear-kiosk-demo
     . demo.conf
     podman build -f FGBaseContainerfile -t $CONTAINER_REPO:fgfs \
-        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
-        --build-arg DEMO_USER=$DEMO_USER
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO
 
 Push the intermediate FlightGear container to the registry.
 
@@ -179,20 +178,17 @@ scenario. Use the following commands:
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/F-35B/ \
-        --build-arg FGDEMO_CONF=fgdemo1.conf \
-        --build-arg DEMO_USER=$DEMO_USER
+        --build-arg FGDEMO_CONF=fgdemo1.conf
 
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/Lockheed-Martin-FA-22A-Raptor/ \
-        --build-arg FGDEMO_CONF=fgdemo2.conf \
-        --build-arg DEMO_USER=$DEMO_USER
+        --build-arg FGDEMO_CONF=fgdemo2.conf
 
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/B-52F/ \
-        --build-arg FGDEMO_CONF=fgdemo3.conf \
-        --build-arg DEMO_USER=$DEMO_USER
+        --build-arg FGDEMO_CONF=fgdemo3.conf
 
 Push the FlightGear bootable containers to the registry.
 
