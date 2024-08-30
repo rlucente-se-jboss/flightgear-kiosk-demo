@@ -16,7 +16,4 @@ RUN --mount=type=bind,relabel=shared,source=fg-rpms.tgz,target=/tmp/fg-rpms.tgz 
 
 # add all the pre-downloaded scenery content
 RUN mkdir -p /usr/share/kiosk-mode/Scenery
-COPY SceneryCache/* /usr/share/kiosk-mode/Scenery
-
-ARG DEMO_USER
-RUN chown -R $DEMO_USER /usr/share/kiosk-mode
+COPY SceneryCache /usr/share/kiosk-mode/Scenery
