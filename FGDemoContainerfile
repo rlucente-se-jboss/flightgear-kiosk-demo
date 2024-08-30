@@ -1,16 +1,20 @@
+##
+## This container image is specific to each aircraft scenario
+##
 ARG CONTAINER_REPO
-FROM $CONTAINER_REPO:base 
+FROM $CONTAINER_REPO:fgfs
 
 # copy scenario content to the kiosk-mode downloads directory
 ARG DL_SCENARIO
 COPY $DL_SCENARIO /usr/share/kiosk-mode/downloads
 
-# copy scenario parameters file to the kiosk user's home directory
+# copy scenario parameters file to the softlinked file for the kiosk user
 ARG FGDEMO_CONF
 COPY $FGDEMO_CONF /usr/share/kiosk-mode/fgdemo.conf
 
 # overwrite kiosk script with FlightGear startup script 
 COPY gnome-kiosk-script /usr/share/kiosk-mode/bin
 
+# ensure all content is owned by DEMO_USER
 ARG DEMO_USER
 RUN  chown -R $DEMO_USER: /usr/share/kiosk-mode
