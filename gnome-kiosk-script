@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# source aircraft model, flight dynamics model, scenery,
-# and location parameters
+# source aircraft model, flight dynamics model, and location parameters
 . $HOME/fgdemo.conf
 
 # setup environment variables for FlightGear
@@ -10,24 +9,15 @@ export FG_AIRCRAFT=$FG_HOME/Aircraft/org.flightgear.fgaddon.stable_2020/Aircraft
 
 # FlightGear tabula rasa
 rm -fr $FG_HOME
-mkdir -p $FG_AIRCRAFT $FG_HOME/Scenery
+mkdir -p $FG_AIRCRAFT
 
-# setup aircraft and scenery cache
+# setup aircraft cache
 CACHEDIR=$HOME/Downloads
 mkdir -p $CACHEDIR
 
 # add aircraft model to FlightGear
 echo "Add aircraft $AIRCRAFT_MODEL to FlightGear"
 unzip -q $CACHEDIR/$AIRCRAFT_MODEL.zip -d $FG_AIRCRAFT
-
-# add scenery files to FlightGear
-for i in ${SCENERY[@]}
-do
-    TARFILE=$i.tgz
-
-    echo "Add scenery $i to FlightGear"
-    tar zxf $CACHEDIR/$TARFILE -C $FG_HOME/Scenery
-done
 
 # run FlightGear
 fgfs \
@@ -61,7 +51,7 @@ fgfs \
     --disable-real-weather-fetch \
     --enable-clouds3d \
     --disable-terrasync \
-    --fg-scenery=$FG_HOME/Scenery \
+    --fg-scenery=/usr/share/kiosk-mode/Scenery \
     --prop:/autopilot/settings/heading-bug-deg=$AP_HEADING \
     --prop:/autopilot/settings/target-speed-kt=$AP_SPEED \
     --prop:/autopilot/settings/target-altitude-ft=$AP_ALTITUDE \
