@@ -1,21 +1,22 @@
+##
+## This is the base image for the kiosk mode demo. It only contains
+## content for the firefox browser to run in kiosk mode. There are
+## placeholders for the flightgear flight simulator, but none of that
+## software or content are installed.
+## 
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
 # configure an insecure local registry
 RUN  mkdir -p /etc/containers/registries.conf.d
 COPY 999-local-registry.conf /etc/containers/registries.conf.d/
 
-# install FlightGear, web browser, and kiosk UI
-RUN --mount=type=bind,relabel=shared,source=fg-rpms.tgz,target=/tmp/fg-rpms.tgz \
-       tar zxf /tmp/fg-rpms.tgz \
-    && cd flightgear-rpms \
-    && dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
-    && dnf -y install --enablerepo=codeready-builder-for-rhel-9-x86_64-rpms *.rpm \
-           gnome-shell gnome-kiosk gnome-kiosk-script-session firefox unzip \
-    && rm -fr /flightgear-rpms \
+# install web browser and kiosk UI
+RUN    dnf install -y gnome-shell gnome-kiosk gnome-kiosk-script-session firefox unzip \
     && systemctl set-default graphical.target
 
 # add kiosk mode content under /usr/share/kiosk-mode since /var/home
-# cannot be updated after initial install
+# cannot be updated after initial install. The fgdemo.conf file is a
+# placeholder for use later with the flight simulator
 ARG DEMO_USER
 RUN    useradd -m $DEMO_USER \
     && passwd -d $DEMO_USER \
@@ -41,4 +42,3 @@ RUN    rm -fr /home/$DEMO_USER/Downloads \
     && mkdir -p /home/$DEMO_USER/.local/bin \
     && ln -s /usr/share/kiosk-mode/bin/gnome-kiosk-script /home/$DEMO_USER/.local/bin/ \
     && chown -R $DEMO_USER: /home/$DEMO_USER
-
