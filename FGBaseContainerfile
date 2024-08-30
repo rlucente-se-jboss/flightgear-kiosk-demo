@@ -1,0 +1,22 @@
+##
+## This is an intermediate container image for installation of Flightgear
+## and all of its scenery. Each aircraft scenario inherits from this
+## container image.
+##
+ARG CONTAINER_REPO
+FROM $CONTAINER_REPO:base
+
+# install FlightGear
+RUN --mount=type=bind,relabel=shared,source=fg-rpms.tgz,target=/tmp/fg-rpms.tgz \
+       tar zxf /tmp/fg-rpms.tgz \
+    && cd flightgear-rpms \
+    && dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+    && dnf -y install --enablerepo=codeready-builder-for-rhel-9-x86_64-rpms *.rpm \
+    && rm -fr /flightgear-rpms
+
+# add all the pre-downloaded scenery content
+RUN mkdir -p /usr/share/kiosk-mode/Scenery
+COPY SceneryCache/* /usr/share/kiosk-mode/Scenery
+
+ARG DEMO_USER
+RUN chown -R $DEMO_USER /usr/share/kiosk-mode
