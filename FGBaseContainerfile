@@ -6,13 +6,14 @@
 ARG CONTAINER_REPO
 FROM $CONTAINER_REPO:base
 
-# install FlightGear
+# install FlightGear and remove redundant scenery
 RUN --mount=type=bind,relabel=shared,source=fg-rpms.tgz,target=/tmp/fg-rpms.tgz \
        tar zxf /tmp/fg-rpms.tgz \
     && cd flightgear-rpms \
     && dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
     && dnf -y install --enablerepo=codeready-builder-for-rhel-9-x86_64-rpms *.rpm \
-    && rm -fr /flightgear-rpms
+    && rm -fr /flightgear-rpms \
+    && rm -fr /usr/share/flightgear/Scenery
 
 # add all the pre-downloaded scenery content
 RUN mkdir -p /usr/share/kiosk-mode/Scenery
