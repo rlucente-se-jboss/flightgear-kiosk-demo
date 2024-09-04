@@ -127,9 +127,9 @@ other parameters such as altitude, speed, flight dynamics model, etc.
 Several example scenarios are included in this repo but it's easy to add
 more. The included scenarios are:
 
-* F-35B at cruise above Langley AFB in Virginia (`fgdemo1.conf`)
-* F-22A at cruise above Edwards AFB in California (`fgdemo2.conf`)
-* B-52F at cruise above Barksdale AFB in Louisiana (`fgdemo3.conf`)
+* F-35B above Langley AFB in Virginia (`fgdemo1.conf`)
+* F-22A above Edwards AFB in California (`fgdemo2.conf`)
+* B-52F above Barksdale AFB in Louisiana (`fgdemo3.conf`)
 
 There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020) that you can use.
 
@@ -175,35 +175,58 @@ scenario. Use the following commands:
     cd ~/flightgear-kiosk-demo
     . demo.conf
     
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35 \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35-broken \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/F-35B/ \
         --build-arg FGDEMO_CONF=fgdemo1.conf
 
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22 \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22-broken \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/Lockheed-Martin-FA-22A-Raptor/ \
         --build-arg FGDEMO_CONF=fgdemo2.conf
 
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52 \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52-broken \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/B-52F/ \
         --build-arg FGDEMO_CONF=fgdemo3.conf
 
-Push the FlightGear bootable containers to the registry.
+Push the FlightGear bootable containers to the registry. These images are
+missing a sound driver since it wasn't include in the "fgfs" tagged image.
 
-    podman push $CONTAINER_REPO:f35
-    podman push $CONTAINER_REPO:f22
-    podman push $CONTAINER_REPO:b52
+    podman push $CONTAINER_REPO:f35-broken
+    podman push $CONTAINER_REPO:f22-broken
+    podman push $CONTAINER_REPO:b52-broken
 
-## Deploy the image using an ISO file
-Run the following command to generate an installable ISO file for your
-bootable container. This command prepares a kickstart file to pull
-the bootable container image from the registry and install that to the
-filesystem on the target system. This kickstart file is then injected
-into the standard RHEL boot ISO you downloaded earlier. It's important to
-note that the content for the target system is actually in the bootable
-container image in the registry.
+Build the patched aircraft scenario images that include the sound driver.
+
+    podman build -f FGPatchContainerfile -t $CONTAINER_REPO:f35-fixed \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg BASE_TAG=f35-broken
+
+    podman build -f FGPatchContainerfile -t $CONTAINER_REPO:f22-fixed \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg BASE_TAG=f22-broken
+
+    podman build -f FGPatchContainerfile -t $CONTAINER_REPO:b52-fixed \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg BASE_TAG=b52-broken
+
+The tags "f35", "f22", and "b52" can float between the broken and fixed
+images (e.g. without and with the sound card). For this demonstration,
+we'll have everything working except the F-35B which can then be patched
+later by moving the "f35" tag and doing a `bootc update --apply`.
+
+    podman tag $CONTAINER_REPO:f35-broken $CONTAINER_REPO:f35
+    podman tag $CONTAINER_REPO:f22-fixed $CONTAINER_REPO:f22
+    podman tag $CONTAINER_REPO:b52-fixed $CONTAINER_REPO:b52
+
+## Deploy the image using an ISO file Run the following command to
+generate an installable ISO file for your bootable container. This command
+prepares a kickstart file to pull the bootable container image from the
+registry and install that to the filesystem on the target system. This
+kickstart file is then injected into the standard RHEL boot ISO you
+downloaded earlier. It's important to note that the content for the
+target system is actually in the bootable container image in the registry.
 
     sudo ./gen-iso.sh
 
@@ -253,3 +276,22 @@ file. The other possibilities are:
     HOSTIP:REGISTRYPORT/bootc-flightgear:base
     HOSTIP:REGISTRYPORT/bootc-flightgear:f35
     HOSTIP:REGISTRYPORT/bootc-flightgear:b52
+
+## Patching an operating system image
+With this scenario, we can patch the F-35B scenario above which is
+missing the sound driver. To do this, we simply move the "f35" tag from
+"f35-broken" to "f35-fixed".
+
+On registry or build host, use the following commands to move the
+"f35" tag.
+
+    cd ~/flightgear-kiosk-demo
+    . demo.conf
+    podman pull $CONTAINER_REPO:f35-fixed
+    podman tag $CONTAINER_REPO:f35-fixed $CONTAINER_REPO:f35
+    podman push $CONTAINER_REPO:f35
+
+On the edge device, use the following command to update the software to
+include the sound driver.
+
+    sudo bootc update --apply
