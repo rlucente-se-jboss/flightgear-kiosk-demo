@@ -13,6 +13,7 @@ COPY 999-local-registry.conf /etc/containers/registries.conf.d/
 # install web browser, kiosk UI, and sound driver
 RUN    dnf install -y gnome-shell gnome-kiosk gnome-kiosk-script-session \
            firefox unzip alsa-sof-firmware \
+    && dnf -y clean all \
     && systemctl set-default graphical.target
 
 # add kiosk mode content under /usr/share/kiosk-mode since /var/home
