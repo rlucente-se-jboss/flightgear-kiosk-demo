@@ -1,13 +1,25 @@
 # FlightGear Demo with RHEL Image Mode
-RHEL Image Mode enables an edge device to completely change it's operating
-system image by switching to a different bootable container image from
-the one that's currently running. This demo illustrates that in a very
-visual way where multiple bootable container images are built and then
-easily swapped out on an edge device. To make this interesting, this demo
-runs the open source FlightGear flight simulator on a edge device using
-RHEL Image Mode. The simulator will run in kiosk mode with a session
-for an unprivileged user. A privileged user will also be configured on
-the edge device to enable switching the bootable container image.
+RHEL Image Mode enables management of edge device systems in a simplified
+way by taking advantage of container application infrastructure. By
+packaging operating system updates as an OCI container, RHEL Image Mode
+simplifies the distribution and deployment of operating systems and
+their updates, easing the amount of resources necessary to maintain a
+disparate fleet of edge devices.
+
+This demo shows both an edge device completely changing it's operating
+system by switching to a different bootable container image from the
+one that's currently running. Additionally, this demo shows how an
+operating system can be updated by pushing an updated container image
+to the registry and then pulling the deltas and applying them. This
+demo illustrates that in a very visual and audible way where multiple
+bootable container images are built to swap the edge device and update
+drivers on the edge device.
+
+To make this interesting, this demo runs the open source FlightGear flight
+simulator on a edge device using RHEL Image Mode. The simulator will
+run in kiosk mode with a session for an unprivileged user. A privileged
+user will also be configured on the edge device to enable switching and
+updating the bootable container image.
 
 ## Demo Setup
 Start with a minimal install of RHEL 9.4 either on baremetal or on a guest
@@ -106,7 +118,8 @@ container.
 At this point, setup is complete.
 
 ## Build the base container image
-Use the following command to build the `base` bootable container image.
+Use the following command to build the `base` bootable container
+image. This image contains the Firefox browser running in kiosk mode.
 
     cd ~/flightgear-kiosk-demo
     . demo.conf
@@ -190,8 +203,9 @@ scenario. Use the following commands:
         --build-arg DL_SCENARIO=AircraftCache/B-52F/ \
         --build-arg FGDEMO_CONF=fgdemo3.conf
 
-Push the FlightGear bootable containers to the registry. These images are
-missing a sound driver since it wasn't include in the "fgfs" tagged image.
+Push the FlightGear bootable containers to the registry. These images
+are missing a sound driver since it wasn't included in the "fgfs"
+tagged image.
 
     podman push $CONTAINER_REPO:f35-broken
     podman push $CONTAINER_REPO:f22-broken
@@ -211,22 +225,39 @@ Build the patched aircraft scenario images that include the sound driver.
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg BASE_TAG=b52-broken
 
+Push the FlightGear bootable containers to the registry. These images
+now have the sound driver.
+
+    podman push $CONTAINER_REPO:f35-fixed
+    podman push $CONTAINER_REPO:f22-fixed
+    podman push $CONTAINER_REPO:b52-fixed
+
 The tags "f35", "f22", and "b52" can float between the broken and fixed
-images (e.g. without and with the sound card). For this demonstration,
-we'll have everything working except the F-35B which can then be patched
-later by moving the "f35" tag and doing a `bootc update --apply`.
+images (e.g. without and with the sound driver, respectively). For this
+demonstration, we'll have everything working except the F-35B which
+can then be patched later by moving the "f35" tag and doing a `bootc
+update --apply`.
 
     podman tag $CONTAINER_REPO:f35-broken $CONTAINER_REPO:f35
     podman tag $CONTAINER_REPO:f22-fixed $CONTAINER_REPO:f22
     podman tag $CONTAINER_REPO:b52-fixed $CONTAINER_REPO:b52
 
-## Deploy the image using an ISO file Run the following command to
-generate an installable ISO file for your bootable container. This command
-prepares a kickstart file to pull the bootable container image from the
-registry and install that to the filesystem on the target system. This
-kickstart file is then injected into the standard RHEL boot ISO you
-downloaded earlier. It's important to note that the content for the
-target system is actually in the bootable container image in the registry.
+Push the newly tagged FlightGear bootable containers to the registry.
+
+    podman push $CONTAINER_REPO:f35
+    podman push $CONTAINER_REPO:f22
+    podman push $CONTAINER_REPO:b52
+
+## Deploy the image using an ISO file
+Run the following command to generate an installable ISO file for your
+bootable container. This command prepares a kickstart file to pull
+the bootable container image from the registry and install that to the
+filesystem on the target system. This kickstart file is then injected
+into the standard RHEL boot ISO you downloaded earlier. It's important to
+note that the content for the target system is actually in the bootable
+container image in the registry. This ISO merely contains enough to start
+the system and then use the kickstart file to pull the operating system
+content from the container registry.
 
     sudo ./gen-iso.sh
 
