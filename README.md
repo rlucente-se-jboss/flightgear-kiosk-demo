@@ -114,7 +114,7 @@ credentials and then pull the container image for the base bootable
 container.
 
     podman login registry.redhat.io
-    podman pull registry.redhat.io/rhel9/rhel-bootc:latest
+    podman pull registry.redhat.io/rhel9/rhel-bootc:9.4
 
 At this point, setup is complete.
 
