@@ -6,20 +6,17 @@ simplifies the distribution and deployment of operating systems and
 their updates, easing the amount of resources necessary to maintain a
 disparate fleet of edge devices.
 
-This demo shows both an edge device completely changing it's operating
-system by switching to a different bootable container image from the
-one that's currently running. Additionally, this demo shows how an
-operating system can be updated by pushing an updated container image
-to the registry and then pulling the deltas and applying them. This
-demo illustrates that in a very visual and audible way where multiple
-bootable container images are built to swap the edge device and update
-drivers on the edge device.
+This demo shows an edge device completely changing it's operating system
+by switching to a different bootable container image from the one that's
+currently running. This demo illustrates that in a very visual and
+audible way where multiple bootable container images are built and then
+swapped to the edge device.
 
 To make this interesting, this demo runs the open source FlightGear flight
-simulator on a edge device using RHEL Image Mode. The simulator will
+simulator on an edge device using RHEL Image Mode. The simulator will
 run in kiosk mode with a session for an unprivileged user. A privileged
-user will also be configured on the edge device to enable switching and
-updating the bootable container image.
+user will also be configured on the edge device to enable switching the
+bootable container image.
 
 ## Demo Setup
 Start with a minimal install of RHEL 9.4 either on baremetal or on a guest
@@ -54,7 +51,6 @@ a little easier to run.
 
     cd ~/flightgear-kiosk-demo
     ssh-keygen -t rsa -f ~/.ssh/id_core
-    ln -s ~/.ssh/id_core.pub .
 
 Edit the `demo.conf` file and make sure the settings are correct. At a
 minimum, you should adjust the credentials for simple content access.
@@ -89,12 +85,6 @@ and ISO image tools.
 
     cd ~/flightgear-kiosk-demo
     sudo ./config-bootc.sh
-
-Run the following command to create a placeholder registry configuration
-file to support the later bootable container build.
-
-    cd ~/flightgear-kiosk-demo
-    touch 999-local-registry.conf
 
 You can use a publicly accessible registry like [Quay](https://quay.io)
 but if you want to run this demo disconnected, you can also optionally
@@ -189,17 +179,17 @@ scenario. Use the following commands:
     cd ~/flightgear-kiosk-demo
     . demo.conf
     
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35-broken \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/F-35B/ \
         --build-arg FGDEMO_CONF=fgdemo1.conf
 
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22-broken \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/Lockheed-Martin-FA-22A-Raptor/ \
         --build-arg FGDEMO_CONF=fgdemo2.conf
 
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52-broken \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52 \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/B-52F/ \
         --build-arg FGDEMO_CONF=fgdemo3.conf
@@ -207,43 +197,6 @@ scenario. Use the following commands:
 Push the FlightGear bootable containers to the registry. These images
 are missing a sound driver since it wasn't included in the "fgfs"
 tagged image.
-
-    podman push $CONTAINER_REPO:f35-broken
-    podman push $CONTAINER_REPO:f22-broken
-    podman push $CONTAINER_REPO:b52-broken
-
-Build the patched aircraft scenario images that include the sound driver.
-
-    podman build -f FGPatchContainerfile -t $CONTAINER_REPO:f35-fixed \
-        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
-        --build-arg BASE_TAG=f35-broken
-
-    podman build -f FGPatchContainerfile -t $CONTAINER_REPO:f22-fixed \
-        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
-        --build-arg BASE_TAG=f22-broken
-
-    podman build -f FGPatchContainerfile -t $CONTAINER_REPO:b52-fixed \
-        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
-        --build-arg BASE_TAG=b52-broken
-
-Push the FlightGear bootable containers to the registry. These images
-now have the sound driver.
-
-    podman push $CONTAINER_REPO:f35-fixed
-    podman push $CONTAINER_REPO:f22-fixed
-    podman push $CONTAINER_REPO:b52-fixed
-
-The tags "f35", "f22", and "b52" can float between the broken and fixed
-images (e.g. without and with the sound driver, respectively). For this
-demonstration, we'll have everything working except the F-35B which
-can then be patched later by moving the "f35" tag and doing a `bootc
-update --apply`.
-
-    podman tag $CONTAINER_REPO:f35-broken $CONTAINER_REPO:f35
-    podman tag $CONTAINER_REPO:f22-fixed $CONTAINER_REPO:f22
-    podman tag $CONTAINER_REPO:b52-fixed $CONTAINER_REPO:b52
-
-Push the newly tagged FlightGear bootable containers to the registry.
 
     podman push $CONTAINER_REPO:f35
     podman push $CONTAINER_REPO:f22
@@ -308,22 +261,3 @@ file. The other possibilities are:
     HOSTIP:REGISTRYPORT/bootc-flightgear:base
     HOSTIP:REGISTRYPORT/bootc-flightgear:f35
     HOSTIP:REGISTRYPORT/bootc-flightgear:b52
-
-## Patching an operating system image
-With this scenario, we can patch the F-35B scenario above which is
-missing the sound driver. To do this, we simply move the "f35" tag from
-"f35-broken" to "f35-fixed".
-
-On registry or build host, use the following commands to move the
-"f35" tag.
-
-    cd ~/flightgear-kiosk-demo
-    . demo.conf
-    podman pull $CONTAINER_REPO:f35-fixed
-    podman tag $CONTAINER_REPO:f35-fixed $CONTAINER_REPO:f35
-    podman push $CONTAINER_REPO:f35
-
-On the edge device, use the following command to update the software to
-include the sound driver.
-
-    sudo bootc update --apply
