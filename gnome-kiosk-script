@@ -22,9 +22,6 @@ unzip -q $CACHEDIR/$AIRCRAFT_MODEL.zip -d $FG_AIRCRAFT
 # run FlightGear
 fgfs \
     --enable-hud-3d \
-    --enable-random-objects \
-    --enable-random-vegetation \
-    --enable-random-buildings \
     --enable-ai-models \
     --enable-ai-traffic \
     --disable-rembrandt \
