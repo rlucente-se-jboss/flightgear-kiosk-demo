@@ -1,0 +1,19 @@
+##
+## This is the base image for the kiosk mode demo. It only contains
+## content for the firefox browser to run in kiosk mode. There are
+## placeholders for the flightgear flight simulator, but none of that
+## software or content are installed.
+## 
+FROM registry.redhat.io/rhel9/rhel-bootc:9.4
+
+# configure an insecure local registry
+RUN  mkdir -p /etc/containers/registries.conf.d
+COPY 999-local-registry.conf /etc/containers/registries.conf.d/
+
+# install web browser, kiosk UI, and sound driver and then mask bootc
+# auto-update timer so it doesn't interfere with the demo
+RUN    dnf group install -y GNOME \
+    && dnf -y install alsa-sof-firmware \
+    && dnf -y clean all \
+    && systemctl mask bootc-fetch-apply-updates.timer \
+    && systemctl set-default graphical.target
