@@ -1,0 +1,9 @@
+##
+## This container image is specific to each aircraft scenario. Sound
+## output is broken so we can then later show the system being patched.
+##
+ARG CONTAINER_BASE_TAG
+FROM $CONTAINER_BASE_TAG
+
+# Break the sound by removing the pipewire libraries. Very sneaky.
+RUN rm -fr /usr/lib64/pipewire-*

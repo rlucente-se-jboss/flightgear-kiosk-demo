@@ -6,11 +6,12 @@ simplifies the distribution and deployment of operating systems and
 their updates, easing the amount of resources necessary to maintain a
 disparate fleet of edge devices.
 
-This demo shows an edge device completely changing it's operating system
-by switching to a different bootable container image from the one that's
-currently running. This demo illustrates that in a very visual and
-audible way where multiple bootable container images are built and then
-swapped to the edge device.
+This demo shows an edge device completely changing it's workload and
+filesystem configuration by both switching to a different bootable
+container image from the one that's currently running and patching a
+sound issue. This demo illustrates that in a very visual and audible way
+where multiple bootable container images are built and then swapped to
+the edge device.
 
 To make this interesting, this demo runs the open source FlightGear flight
 simulator on an edge device using RHEL Image Mode. The simulator will
@@ -72,10 +73,11 @@ The full list of options in the `demo.conf` file are shown here.
 | CONTAINER_REPO   | The fully qualified name for your bootable container repository |
 | REGISTRYINSECURE | Boolean for whether the registry requires TLS |
 
-Make sure to download the `BOOT_ISO` file, e.g. [rhel-9.4-x86_64-boot.iso](https://access.redhat.com/downloads/content/rhel)
+Make sure to download the RHEL 9.4 `BOOT_ISO` file, e.g. [rhel-9.4-x86_64-boot.iso](https://access.redhat.com/downloads/content/rhel)
 to the local copy of this repository on your RHEL instance
-(e.g. ~/flightgear-kiosk-demo). Run the following script to update
-the system.
+(e.g. ~/flightgear-kiosk-demo).
+
+Run the following script to register with Red Hat and update the system.
 
     sudo ./register-and-update.sh
     sudo reboot
@@ -93,7 +95,7 @@ set up a local container registry using the following script.
     cd ~/flightgear-kiosk-demo
     sudo ./config-registry.sh
 
-If you set up an insecure registry on another RHEL instance,
+NB: If you set up an insecure registry on another RHEL instance,
 please make sure to copy the `999-local-registry.conf` file to the
 `~/flightgear-kiosk-demo` and `/etc/containers/registries.conf.d`
 directories on this RHEL instance that will build the bootable container
@@ -135,7 +137,8 @@ more. The included scenarios are:
 * F-22A above Edwards AFB in California (`fgdemo2.conf`)
 * B-52F above Barksdale AFB in Louisiana (`fgdemo3.conf`)
 
-There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020) that you can use.
+There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020)
+that you can use.
 
 ## Refresh the scenario content for FlightGear
 The FlightGear scenery is quite detailed and bulk downloads are throttled
@@ -178,29 +181,52 @@ scenario. Use the following commands:
 
     cd ~/flightgear-kiosk-demo
     . demo.conf
-    
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35 \
+
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f35-fixed \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/F-35B/ \
         --build-arg FGDEMO_CONF=fgdemo1.conf
 
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22 \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:f22-fixed \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/Lockheed-Martin-FA-22A-Raptor/ \
         --build-arg FGDEMO_CONF=fgdemo2.conf
 
-    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52 \
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:b52-fixed \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/B-52F/ \
         --build-arg FGDEMO_CONF=fgdemo3.conf
 
-Push the FlightGear bootable containers to the registry. These images
-are missing a sound driver since it wasn't included in the "fgfs"
-tagged image.
+Push the FlightGear bootable containers to the registry. These container
+images all include working sound. We'll use an issue with sound to
+illustrate patching.
 
-    podman push $CONTAINER_REPO:f35
-    podman push $CONTAINER_REPO:f22
-    podman push $CONTAINER_REPO:b52
+    podman push $CONTAINER_REPO:f35-fixed
+    podman push $CONTAINER_REPO:f22-fixed
+    podman push $CONTAINER_REPO:b52-fixed
+
+Next, build the container images that do not have sound. The
+`FGNoSoundContainerFile` removes the sound libraries from the base images
+to prevent sound from working on the target device.
+
+    cd ~/flightgear-kiosk-demo
+    . demo.conf
+
+    podman build -f FGNoSoundContainerfile -t $CONTAINER_REPO:f35-broken \
+        --build-arg CONTAINER_BASE_TAG=$CONTAINER_REPO:f35-fixed
+
+    podman build -f FGNoSoundContainerfile -t $CONTAINER_REPO:f22-broken \
+        --build-arg CONTAINER_BASE_TAG=$CONTAINER_REPO:f22-fixed
+
+    podman build -f FGNoSoundContainerfile -t $CONTAINER_REPO:b52-broken \
+        --build-arg CONTAINER_BASE_TAG=$CONTAINER_REPO:b52-fixed
+
+Push the FlightGear bootable containers to the registry. These container
+images all include broken sound.
+
+    podman push $CONTAINER_REPO:f35-broken
+    podman push $CONTAINER_REPO:f22-broken
+    podman push $CONTAINER_REPO:b52-broken
 
 ## Deploy the image using an ISO file
 Run the following command to generate an installable ISO file for your
@@ -221,9 +247,9 @@ firmware option for a virtual guest or install to a physical edge device
 that supports UEFI. Make sure this system is able to access your public
 registry to pull down the bootable container image.
 
-FlightGear requires extensive resources so you may see a core dump in
-a guest VM if memory is low. I've only tested running the bootable
-containers on a laptop with 64GB of memory and a 512GB SDD.
+You may see a core dump with FlightGear when running in a guest VM if
+memory is low. I've successfully tested running the bootable containers
+on a laptop with 16GB of memory and a 512GB SDD.
 
 Test the deployment by verifying that the kiosk user automatically logs
 into a desktop where only the web browser is available with no other
@@ -236,6 +262,7 @@ run in kiosk mode once installed.
 * Firefox browsing to the RHEL Image Mode landing page.
 * FlightGear with an F-35B flying over Langley AFB in VA.
 * FlightGear with an F-22A flying over Edwards AFB in CA.
+* FlightGear with an B-52F flying over Barksdale AFB in LA.
 
 Once the `base` image is installed, it's very simple to switch between
 them. The target device will auto-login to the unprivileged user `kiosk`
@@ -252,12 +279,18 @@ where `IP_ADDRESS` is the address of the edge device.
 
 Then type the following commands to switch to the F-22 flight simulation.
 
-    sudo bootc switch HOSTIP:REGISTRYPORT/bootc-flightgear:f22
+    sudo bootc switch HOSTIP:REGISTRYPORT/bootc-flightgear:f35-broken
     sudo reboot
 
 where `HOSTIP` and `REGISTRYPORT` match the values in the `demo.conf`
 file. The other possibilities are:
 
     HOSTIP:REGISTRYPORT/bootc-flightgear:base
-    HOSTIP:REGISTRYPORT/bootc-flightgear:f35
-    HOSTIP:REGISTRYPORT/bootc-flightgear:b52
+    HOSTIP:REGISTRYPORT/bootc-flightgear:f35-fixed
+    HOSTIP:REGISTRYPORT/bootc-flightgear:f22-broken
+    HOSTIP:REGISTRYPORT/bootc-flightgear:f22-fixed
+    HOSTIP:REGISTRYPORT/bootc-flightgear:b52-broken
+    HOSTIP:REGISTRYPORT/bootc-flightgear:b52-fixed
+
+You can demonstrate patching by switching from a `broken` tagged image
+to a `fixed` tagged image.
