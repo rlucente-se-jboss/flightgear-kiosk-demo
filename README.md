@@ -136,6 +136,7 @@ more. The included scenarios are:
 * F-35B above Langley AFB in Virginia (`fgdemo1.conf`)
 * F-22A above Edwards AFB in California (`fgdemo2.conf`)
 * B-52F above Barksdale AFB in Louisiana (`fgdemo3.conf`)
+* UH-60 on the tarmac at Reagan National Airport in DC (`fgdemo4.conf`)
 
 There's an extensive set of FlightGear [aircraft models](https://mirrors.ibiblio.org/flightgear/ftp/Aircraft-2020)
 that you can use.
@@ -197,6 +198,11 @@ scenario. Use the following commands:
         --build-arg DL_SCENARIO=AircraftCache/B-52F/ \
         --build-arg FGDEMO_CONF=fgdemo3.conf
 
+    podman build -f FGDemoContainerfile -t $CONTAINER_REPO:uh60-fixed \
+        --build-arg CONTAINER_REPO=$CONTAINER_REPO \
+        --build-arg DL_SCENARIO=AircraftCache/UH-60/ \
+        --build-arg FGDEMO_CONF=fgdemo3.conf
+
 Push the FlightGear bootable containers to the registry. These container
 images all include working sound. We'll use an issue with sound to
 illustrate patching.
@@ -204,6 +210,7 @@ illustrate patching.
     podman push $CONTAINER_REPO:f35-fixed
     podman push $CONTAINER_REPO:f22-fixed
     podman push $CONTAINER_REPO:b52-fixed
+    podman push $CONTAINER_REPO:uh60-fixed
 
 Next, build the container images that do not have sound. The
 `FGNoSoundContainerFile` removes the sound libraries from the base images
@@ -221,12 +228,16 @@ to prevent sound from working on the target device.
     podman build -f FGNoSoundContainerfile -t $CONTAINER_REPO:b52-broken \
         --build-arg CONTAINER_BASE_TAG=$CONTAINER_REPO:b52-fixed
 
+    podman build -f FGNoSoundContainerfile -t $CONTAINER_REPO:uh60-broken \
+        --build-arg CONTAINER_BASE_TAG=$CONTAINER_REPO:uh60-fixed
+
 Push the FlightGear bootable containers to the registry. These container
 images all include broken sound.
 
     podman push $CONTAINER_REPO:f35-broken
     podman push $CONTAINER_REPO:f22-broken
     podman push $CONTAINER_REPO:b52-broken
+    podman push $CONTAINER_REPO:uh60-broken
 
 ## Deploy the image using an ISO file
 Run the following command to generate an installable ISO file for your
@@ -262,7 +273,8 @@ run in kiosk mode once installed.
 * Firefox browsing to the RHEL Image Mode landing page.
 * FlightGear with an F-35B flying over Langley AFB in VA.
 * FlightGear with an F-22A flying over Edwards AFB in CA.
-* FlightGear with an B-52F flying over Barksdale AFB in LA.
+* FlightGear with a B-52F flying over Barksdale AFB in LA.
+* FlightGear with a UH-60 on the tarmac at Reagan National Airport in DC.
 
 Once the `base` image is installed, it's very simple to switch between
 them. The target device will auto-login to the unprivileged user `kiosk`
@@ -291,6 +303,8 @@ file. The other possibilities are:
     HOSTIP:REGISTRYPORT/bootc-flightgear:f22-fixed
     HOSTIP:REGISTRYPORT/bootc-flightgear:b52-broken
     HOSTIP:REGISTRYPORT/bootc-flightgear:b52-fixed
+    HOSTIP:REGISTRYPORT/bootc-flightgear:uh60-broken
+    HOSTIP:REGISTRYPORT/bootc-flightgear:uh60-fixed
 
 You can demonstrate patching by switching from a `broken` tagged image
 to a `fixed` tagged image.
