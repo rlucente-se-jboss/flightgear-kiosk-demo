@@ -7,11 +7,11 @@ their updates, easing the amount of resources necessary to maintain a
 disparate fleet of edge devices.
 
 This demo shows an edge device completely changing it's workload and
-filesystem configuration by both switching to a different bootable
-container image from the one that's currently running and patching a
-sound issue. This demo illustrates that in a very visual and audible way
-where multiple bootable container images are built and then swapped to
-the edge device.
+filesystem configuration both by switching to a different bootable
+container image from the one that's currently running and by patching
+a sound issue. This demo illustrates that in a very visual and audible
+way where multiple bootable container images are built and then swapped
+to the edge device.
 
 To make this interesting, this demo runs the open source FlightGear flight
 simulator on an edge device using RHEL Image Mode. The simulator will
@@ -28,7 +28,7 @@ installation, configure a regular user with `sudo` privileges on the host.
 
 These instructions assume that this repository is cloned or copied to your
 user's home directory on the host (e.g. `~/flightgear-kiosk-demo`). The
-below instructions follow that assumption.
+instructions below follow that assumption.
 
 The open source FlightGear flight simulator is not normally available
 for RHEL 9 so I had to custom build eight RPMs in addition to using EPEL
@@ -39,7 +39,7 @@ but it's far easier, after cloning this repo, to download the custom built
 and copy the `fg-rpms.tgz` file to the local copy of this repository
 (e.g. `~/flightgear-kiosk-demo`).
 
-The Scenery data for FlightGear is quite extensive and downloads from the
+The scenery data for FlightGear is quite extensive and downloads from the
 official site are throttled. To speed this up, please download the [scenery
 cache](https://drive.google.com/drive/folders/112i4mOfHXXEoZNdSln_xWgMdx3ssWHtz?usp=drive_link)
 and copy the `SceneryCache.tgz` file to the local copy of this repository
