@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# set max volume
+wpctl set-volume @DEFAULT_AUDIO_SINK@ 1.0
+
 # source aircraft model, flight dynamics model, and location parameters
 . $HOME/fgdemo.conf
 

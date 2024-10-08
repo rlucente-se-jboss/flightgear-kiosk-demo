@@ -5,5 +5,6 @@
 ARG CONTAINER_BASE_TAG
 FROM $CONTAINER_BASE_TAG
 
-# Break the sound by removing the pipewire libraries. Very sneaky.
-RUN rm -fr /usr/lib64/pipewire-*
+# Turn the volume all the way down
+RUN sed -i 's/\(@DEFAULT_AUDIO_SINK@\) 1.0/\1 0.0/g' \
+        /usr/share/kiosk-mode/bin/gnome-kiosk-script
