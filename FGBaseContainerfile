@@ -6,8 +6,7 @@
 ARG CONTAINER_REPO
 FROM $CONTAINER_REPO:base
 
-# install FlightGear and remove redundant scenery. also remove the sound driver
-# so we can later "patch" that problem
+# Install FlightGear and remove redundant scenery.
 RUN --mount=type=bind,relabel=shared,source=fg-rpms.tgz,target=/tmp/fg-rpms.tgz \
        tar zxf /tmp/fg-rpms.tgz \
     && cd flightgear-rpms \
@@ -17,6 +16,6 @@ RUN --mount=type=bind,relabel=shared,source=fg-rpms.tgz,target=/tmp/fg-rpms.tgz 
     && rm -fr /flightgear-rpms \
     && rm -fr /usr/share/flightgear/Scenery
 
-# add all the pre-downloaded scenery content
+# Add all the pre-downloaded scenery content
 RUN mkdir -p /usr/share/kiosk-mode/Scenery
 COPY SceneryCache /usr/share/kiosk-mode/Scenery
