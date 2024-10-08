@@ -201,7 +201,7 @@ scenario. Use the following commands:
     podman build -f FGDemoContainerfile -t $CONTAINER_REPO:uh60-fixed \
         --build-arg CONTAINER_REPO=$CONTAINER_REPO \
         --build-arg DL_SCENARIO=AircraftCache/UH-60/ \
-        --build-arg FGDEMO_CONF=fgdemo3.conf
+        --build-arg FGDEMO_CONF=fgdemo4.conf
 
 Push the FlightGear bootable containers to the registry. These container
 images all include working sound. We'll use an issue with sound to
