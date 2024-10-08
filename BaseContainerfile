@@ -27,7 +27,7 @@ RUN    useradd -m $DEMO_USER \
     && mkdir -p /usr/share/kiosk-mode/bin \
                 /usr/share/kiosk-mode/downloads \
     && touch /usr/share/kiosk-mode/fgdemo.conf \
-    && printf '#!/bin/sh\nwpctl set-volume @DEFAULT_AUDIO_SINK@ 1.0\nfirefox -kiosk https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux/image-mode\nsleep 1.0\nexec "$0" "$@"' \
+    && printf '#!/bin/sh\nsleep 5\nwpctl set-volume @DEFAULT_AUDIO_SINK@ 1.0\nfirefox -kiosk https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux/image-mode\nsleep 1.0\nexec "$0" "$@"' \
            > /usr/share/kiosk-mode/bin/gnome-kiosk-script \
     && chmod +x /usr/share/kiosk-mode/bin/gnome-kiosk-script \
     && chown -R $DEMO_USER: /usr/share/kiosk-mode

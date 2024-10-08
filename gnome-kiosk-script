@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# set max volume
-wpctl set-volume @DEFAULT_AUDIO_SINK@ 1.0
-
 # source aircraft model, flight dynamics model, and location parameters
 . $HOME/fgdemo.conf
 
@@ -21,6 +18,10 @@ mkdir -p $CACHEDIR
 # add aircraft model to FlightGear
 echo "Add aircraft $AIRCRAFT_MODEL to FlightGear"
 unzip -q $CACHEDIR/$AIRCRAFT_MODEL.zip -d $FG_AIRCRAFT
+
+# set max volume
+sleep 5
+wpctl set-volume @DEFAULT_AUDIO_SINK@ 1.0
 
 # run FlightGear
 fgfs \
